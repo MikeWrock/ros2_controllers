@@ -1,4 +1,4 @@
-// Copyright 2021 Stogl Robotics Consulting UG (haftungsbescrhänkt)
+// Copyright 2023 TODO: Wrock
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "forward_command_controller/forward_controllers_base.hpp"
+#include "pounce_command_controller/pounce_controllers_base.hpp"
 
 #include <algorithm>
 #include <memory>
@@ -25,16 +25,16 @@
 #include "rclcpp/logging.hpp"
 #include "rclcpp/qos.hpp"
 
-namespace forward_command_controller
+namespace pounce_command_controller
 {
-ForwardControllersBase::ForwardControllersBase()
+PounceControllersBase::PounceControllersBase()
 : controller_interface::ControllerInterface(),
   rt_command_ptr_(nullptr),
   joints_command_subscriber_(nullptr)
 {
 }
 
-controller_interface::CallbackReturn ForwardControllersBase::on_init()
+controller_interface::CallbackReturn PounceControllersBase::on_init()
 {
   try
   {
@@ -49,7 +49,7 @@ controller_interface::CallbackReturn ForwardControllersBase::on_init()
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
-controller_interface::CallbackReturn ForwardControllersBase::on_configure(
+controller_interface::CallbackReturn PounceControllersBase::on_configure(
   const rclcpp_lifecycle::State & /*previous_state*/)
 {
   auto ret = this->read_parameters();
@@ -67,7 +67,7 @@ controller_interface::CallbackReturn ForwardControllersBase::on_configure(
 }
 
 controller_interface::InterfaceConfiguration
-ForwardControllersBase::command_interface_configuration() const
+PounceControllersBase::command_interface_configuration() const
 {
   controller_interface::InterfaceConfiguration command_interfaces_config;
   command_interfaces_config.type = controller_interface::interface_configuration_type::INDIVIDUAL;
@@ -76,14 +76,14 @@ ForwardControllersBase::command_interface_configuration() const
   return command_interfaces_config;
 }
 
-controller_interface::InterfaceConfiguration ForwardControllersBase::state_interface_configuration()
+controller_interface::InterfaceConfiguration PounceControllersBase::state_interface_configuration()
   const
 {
   return controller_interface::InterfaceConfiguration{
     controller_interface::interface_configuration_type::NONE};
 }
 
-controller_interface::CallbackReturn ForwardControllersBase::on_activate(
+controller_interface::CallbackReturn PounceControllersBase::on_activate(
   const rclcpp_lifecycle::State & /*previous_state*/)
 {
   //  check if we have all resources defined in the "points" parameter
@@ -109,7 +109,7 @@ controller_interface::CallbackReturn ForwardControllersBase::on_activate(
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
-controller_interface::CallbackReturn ForwardControllersBase::on_deactivate(
+controller_interface::CallbackReturn PounceControllersBase::on_deactivate(
   const rclcpp_lifecycle::State & /*previous_state*/)
 {
   // reset command buffer
@@ -117,7 +117,7 @@ controller_interface::CallbackReturn ForwardControllersBase::on_deactivate(
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
-controller_interface::return_type ForwardControllersBase::update(
+controller_interface::return_type PounceControllersBase::update(
   const rclcpp::Time & /*time*/, const rclcpp::Duration & /*period*/)
 {
   auto joint_commands = rt_command_ptr_.readFromRT();
@@ -128,21 +128,23 @@ controller_interface::return_type ForwardControllersBase::update(
     return controller_interface::return_type::OK;
   }
 
-  if ((*joint_commands)->data.size() != command_interfaces_.size())
+  if ((*joint_commands)->joint_names.size()*3 != command_interfaces_.size())
   {
     RCLCPP_ERROR_THROTTLE(
       get_node()->get_logger(), *(get_node()->get_clock()), 1000,
       "command size (%zu) does not match number of interfaces (%zu)",
-      (*joint_commands)->data.size(), command_interfaces_.size());
+      (*joint_commands)->joint_names.size()*3, command_interfaces_.size());
     return controller_interface::return_type::ERROR;
   }
 
   for (auto index = 0ul; index < command_interfaces_.size(); ++index)
   {
-    command_interfaces_[index].set_value((*joint_commands)->data[index]);
+    command_interfaces_[index].set_value((*joint_commands)->joint_commands[index].position);
+    command_interfaces_[++index].set_value((*joint_commands)->joint_commands[index].velocity);
+    command_interfaces_[++index].set_value((*joint_commands)->joint_commands[index].effort);
   }
 
   return controller_interface::return_type::OK;
 }
 
-}  // namespace forward_command_controller
+}  // namespace pounce_command_controller

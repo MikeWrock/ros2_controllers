@@ -1,4 +1,4 @@
-// Copyright 2021 Stogl Robotics Consulting UG (haftungsbescrhänkt)
+// Copyright TODO: Wrock
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,64 +12,64 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#ifndef FORWARD_COMMAND_CONTROLLER__FORWARD_CONTROLLERS_BASE_HPP_
-#define FORWARD_COMMAND_CONTROLLER__FORWARD_CONTROLLERS_BASE_HPP_
+#ifndef POUNCE_COMMAND_CONTROLLER__POUNCE_CONTROLLERS_BASE_HPP_
+#define POUNCE_COMMAND_CONTROLLER__POUNCE_CONTROLLERS_BASE_HPP_
 
 #include <memory>
 #include <string>
 #include <vector>
 
 #include "controller_interface/controller_interface.hpp"
-#include "forward_command_controller/visibility_control.h"
+#include "pounce_command_controller/visibility_control.h"
 #include "rclcpp/subscription.hpp"
 #include "rclcpp_lifecycle/node_interfaces/lifecycle_node_interface.hpp"
 #include "rclcpp_lifecycle/state.hpp"
 #include "realtime_tools/realtime_buffer.h"
-#include "std_msgs/msg/float64_multi_array.hpp"
+#include "pounce_msgs/msg/joint_commands.hpp"
 
-namespace forward_command_controller
+namespace pounce_command_controller
 {
-using CmdType = std_msgs::msg::Float64MultiArray;
+using CmdType = pounce_msgs::msg::JointCommands;
 
 /**
- * \brief Forward command controller for a set of joints and interfaces.
+ * \brief Pounce command controller for a set of joints and interfaces.
  *
- * This class forwards the command signal down to a set of joints or interfaces.
+ * This class forwards the command signal down to a set of joints and interfaces.
  *
  * Subscribes to:
- * - \b commands (std_msgs::msg::Float64MultiArray) : The commands to apply.
+ * - \b commands (pounce_msgs::msg::JointCommands) : The commands to apply.
  */
-class ForwardControllersBase : public controller_interface::ControllerInterface
+class PounceControllersBase : public controller_interface::ControllerInterface
 {
 public:
-  FORWARD_COMMAND_CONTROLLER_PUBLIC
-  ForwardControllersBase();
+  POUNCE_COMMAND_CONTROLLER_PUBLIC
+  PounceControllersBase();
 
-  FORWARD_COMMAND_CONTROLLER_PUBLIC
-  ~ForwardControllersBase() = default;
+  POUNCE_COMMAND_CONTROLLER_PUBLIC
+  ~PounceControllersBase() = default;
 
-  FORWARD_COMMAND_CONTROLLER_PUBLIC
+  POUNCE_COMMAND_CONTROLLER_PUBLIC
   controller_interface::InterfaceConfiguration command_interface_configuration() const override;
 
-  FORWARD_COMMAND_CONTROLLER_PUBLIC
+  POUNCE_COMMAND_CONTROLLER_PUBLIC
   controller_interface::InterfaceConfiguration state_interface_configuration() const override;
 
-  FORWARD_COMMAND_CONTROLLER_PUBLIC
+  POUNCE_COMMAND_CONTROLLER_PUBLIC
   controller_interface::CallbackReturn on_init() override;
 
-  FORWARD_COMMAND_CONTROLLER_PUBLIC
+  POUNCE_COMMAND_CONTROLLER_PUBLIC
   controller_interface::CallbackReturn on_configure(
     const rclcpp_lifecycle::State & previous_state) override;
 
-  FORWARD_COMMAND_CONTROLLER_PUBLIC
+  POUNCE_COMMAND_CONTROLLER_PUBLIC
   controller_interface::CallbackReturn on_activate(
     const rclcpp_lifecycle::State & previous_state) override;
 
-  FORWARD_COMMAND_CONTROLLER_PUBLIC
+  POUNCE_COMMAND_CONTROLLER_PUBLIC
   controller_interface::CallbackReturn on_deactivate(
     const rclcpp_lifecycle::State & previous_state) override;
 
-  FORWARD_COMMAND_CONTROLLER_PUBLIC
+  POUNCE_COMMAND_CONTROLLER_PUBLIC
   controller_interface::return_type update(
     const rclcpp::Time & time, const rclcpp::Duration & period) override;
 
@@ -101,6 +101,6 @@ protected:
   rclcpp::Subscription<CmdType>::SharedPtr joints_command_subscriber_;
 };
 
-}  // namespace forward_command_controller
+}  // namespace pounce_command_controller
 
-#endif  // FORWARD_COMMAND_CONTROLLER__FORWARD_CONTROLLERS_BASE_HPP_
+#endif  // POUNCE_COMMAND_CONTROLLER__POUNCE_CONTROLLERS_BASE_HPP_

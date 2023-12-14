@@ -1,4 +1,4 @@
-// Copyright 2020 PAL Robotics S.L.
+// Copyright 2023 TODO Wrock
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-#include "forward_command_controller/forward_command_controller.hpp"
+#include "pounce_command_controller/pounce_command_controller.hpp"
 
 #include <algorithm>
 #include <memory>
@@ -23,16 +23,16 @@
 #include "rclcpp/logging.hpp"
 #include "rclcpp/qos.hpp"
 
-namespace forward_command_controller
+namespace pounce_command_controller
 {
-ForwardCommandController::ForwardCommandController() : ForwardControllersBase() {}
+PounceCommandController::PounceCommandController() : PounceControllersBase() {}
 
-void ForwardCommandController::declare_parameters()
+void PounceCommandController::declare_parameters()
 {
   param_listener_ = std::make_shared<ParamListener>(get_node());
 }
 
-controller_interface::CallbackReturn ForwardCommandController::read_parameters()
+controller_interface::CallbackReturn PounceCommandController::read_parameters()
 {
   if (!param_listener_)
   {
@@ -47,7 +47,7 @@ controller_interface::CallbackReturn ForwardCommandController::read_parameters()
     return controller_interface::CallbackReturn::ERROR;
   }
 
-  if (params_.interface_name.empty())
+  if (params_.interface_names.empty())
   {
     RCLCPP_ERROR(get_node()->get_logger(), "'interface_name' parameter was empty");
     return controller_interface::CallbackReturn::ERROR;
@@ -55,15 +55,17 @@ controller_interface::CallbackReturn ForwardCommandController::read_parameters()
 
   for (const auto & joint : params_.joints)
   {
-    command_interface_types_.push_back(joint + "/" + params_.interface_name);
+    for (const auto & interface : params_.interface_names){
+      command_interface_types_.push_back(joint + "/" + interface);
+    }
   }
 
   return controller_interface::CallbackReturn::SUCCESS;
 }
 
-}  // namespace forward_command_controller
+}  // namespace pounce_command_controller
 
 #include "pluginlib/class_list_macros.hpp"
 
 PLUGINLIB_EXPORT_CLASS(
-  forward_command_controller::ForwardCommandController, controller_interface::ControllerInterface)
+  pounce_command_controller::PounceCommandController, controller_interface::ControllerInterface)
